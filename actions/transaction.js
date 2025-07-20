@@ -14,6 +14,53 @@ const serializeAmount = (obj) => ({
   amount: obj.amount.toNumber(),
 });
 
+export async function POST(req) {
+  const data = await req.formData();
+  const file = data.get('file');
+
+  if (!file) {
+    return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+  }
+
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const base64 = buffer.toString('base64');
+
+  const model = genAI.getGenerativeModel({ model: 'gemini-pro-vision' });
+
+  const prompt = `
+This is a bank statement in tabular format.
+Extract all rows as transactions in JSON format with fields:
+  - date (YYYY-MM-DD)
+  - amount
+  - type (INCOME or EXPENSE)
+  - description
+  - category (guess from context)
+Return array of transactions only as JSON.
+`;
+
+  try {
+    const result = await model.generateContent([
+      prompt,
+      {
+        inlineData: {
+          data: base64,
+          mimeType: 'application/pdf',
+        },
+      },
+    ]);
+
+    const responseText = await result.response.text();
+    const cleaned = responseText.trim().replace(/``````/g, '');
+    const transactions = JSON.parse(cleaned);
+
+    return NextResponse.json({ transactions });
+  } catch (error) {
+    console.error(error);
+    return NextResponse.json({ error: 'Failed to parse PDF' }, { status: 500 });
+  }
+}
+
+
 // Create Transaction
 export async function createTransaction(data) {
   try {
