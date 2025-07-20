@@ -24,7 +24,12 @@ const header = async () => {
         {/* Authentication Buttons */}
         <div className="flex items-center space-x-4">
           <SignedIn>
-            <a href="/transaction/create">
+            <a href="/transactionHistory/add">
+              <Button variant="ghost" className="flex items-center gap-2">
+                <span className="hidden md:inline">Import From PDF</span>
+              </Button>
+            </a>
+            <a href="transaction/create">
               <Button variant="ghost" className="flex items-center gap-2">
                 <PenBox size={18} />
                 <span className="hidden md:inline">Add Transaction</span>
