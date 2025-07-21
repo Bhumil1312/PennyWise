@@ -166,7 +166,7 @@ This project was developed as part of the interview assignment for the Typeface 
 ## Demo
 
 Watch the full working demo and feature walkthrough  
-👉 [PennyWise Demo Playlist – YouTube]([https://www.youtube.com/playlist?list=INSERT_YOUR_PLAYLIST_ID_HERE](https://www.youtube.com/playlist?list=PLgToSABL-x9L29Ipv3QR3-c04SAjHhEhG))
+👉 [PennyWise Demo Playlist – YouTube]((https://www.youtube.com/playlist?list=PLgToSABL-x9L29Ipv3QR3-c04SAjHhEhG))
 
 ---
 
