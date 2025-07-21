@@ -1,56 +1,69 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
-import { Loader2 } from 'lucide-react';
-import { toast } from 'sonner';
+import { useRef, useEffect } from "react";
+import { Camera, Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+import useFetch from "@/hooks/use-fetch";
+import { scanPDF } from "@/actions/bulktransaction";
 
-export function BulkReceiptScanner({ onScanComplete }) {
-  const [loading, setLoading] = useState(false);
+export function PDFScanner({ onScanComplete }) {
+  const fileInputRef = useRef(null);
 
-  const handlePDFUpload = async (event) => {
-    const file = event.target.files[0];
-    if (!file || file.type !== 'application/pdf') {
-      toast.error('Please upload a valid PDF file');
+  const {
+    loading: scanPDFLoading,
+    fn: scanPDFFn,
+    data: scannedData,
+  } = useFetch(scanPDF);
+
+  const handlePDFScan = async (file) => {
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("PDF size should be less than 5MB");
       return;
     }
 
-    const formData = new FormData();
-    formData.append('file', file);
-
-    setLoading(true);
-    try {
-      const res = await fetch('/api/scan-receipt', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-      if (res.ok && Array.isArray(data.transactions)) {
-        onScanComplete(data.transactions);
-        toast.success(`Scanned ${data.transactions.length} transactions`);
-      } else {
-        toast.error('Failed to parse PDF');
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error('Error scanning receipt');
-    } finally {
-      setLoading(false);
-    }
+    await scanPDFFn(file);
   };
 
+  useEffect(() => {
+    if (scannedData && !scanPDFLoading) {
+      onScanComplete(scannedData);
+      toast.success("PDF scanned successfully");
+    }
+  }, [scanPDFLoading, scannedData]);
+
   return (
-    <div className="space-y-2">
-      <label className="text-sm font-medium">Upload PDF Bank Statement</label>
-      <Input type="file" accept="application/pdf" onChange={handlePDFUpload} />
-      {loading && (
-        <div className="flex items-center gap-2 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Scanning with Gemini...
-        </div>
-      )}
+    <div className="flex items-center gap-4">
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept="application/pdf"
+        capture="environment"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) handlePDFScan(file);
+        }}
+      />
+      <Button
+        type="button"
+        variant="outline"
+        className="w-full h-10 rounded-lg font-bold flex items-center justify-center animate-gradient-logo text-gray-800 hover:text-white"
+        onClick={() => fileInputRef.current?.click()}
+        disabled={scanPDFLoading}
+      >
+        {scanPDFLoading ? (
+          <>
+            <Loader2 className="mr-2 animate-spin" />
+            <span>Scanning PDF...</span>
+          </>
+        ) : (
+          <>
+            <Camera className="mr-2" />
+            <span>Upload, and Scan PDF with AI</span>
+          </>
+        )}
+      </Button>
     </div>
   );
 }
