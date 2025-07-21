@@ -207,7 +207,7 @@ Once pushed, collaborators and reviewers (including interviewers) can check your
 ## Demo
 
 Watch a walkthrough of all features here:  
-👉 [PennyWise Demo Playlist – YouTube](https://www.youtube.com/playlist?list=INSERT_YOUR_PLAYLIST_ID_HERE)
+👉 [PennyWise Demo Playlist – YouTube](https://www.youtube.com/playlist?list=PLgToSABL-x9L29Ipv3QR3-c04SAjHhEhG)
 
 ---
 
