@@ -175,9 +175,3 @@ Watch the full working demo and feature walkthrough
 For questions, feedback, or demo requests, please [open an issue](https://github.com/Bhumil1312/PennyWise/issues) or contact [@Bhumil1312](https://github.com/Bhumil1312).
 
 ---
-
-## License
-
-This project is licensed under the **MIT License**. See `LICENSE` for full details.
-
----
