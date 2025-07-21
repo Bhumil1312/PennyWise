@@ -58,15 +58,15 @@ export default function RootLayout({ children }) {
               <div className="flex gap-10 md:gap-16">
                 {/* Main Site Links - Vertical list */}
                 <nav className="flex flex-col gap-4 text-gray-600">
-                  <a href="/pageUnderDev" className="hover:text-white transition">Watch Demo</a>
+                  <a href="https://www.youtube.com/playlist?list=PLgToSABL-x9L29Ipv3QR3-c04SAjHhEhG" className="hover:text-white transition">Watch Demo</a>
                   <a href="/#features" className="hover:text-white transition">Features</a>
                   <a href="/pageUnderDev" className="hover:text-white transition">Pricing</a>
                   <a href="/pageUnderDev" className="hover:text-white transition">Contact</a>
                 </nav>
                 {/* Policy & Terms - Vertical list */}
                 <nav className="flex flex-col gap-4 text-xs text-gray-400">
-                  <a href="/privacy" className="hover:text-white">Privacy Policy</a>
-                  <a href="/terms" className="hover:text-white">Terms</a>
+                  <a href="/pageUnderDev" className="hover:text-white">Privacy Policy</a>
+                  <a href="/pageUnderDev" className="hover:text-white">Terms</a>
                 </nav>
               </div>
             </div>

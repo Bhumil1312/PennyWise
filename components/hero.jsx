@@ -41,7 +41,7 @@ const HeroSection = () => {
               Start for Free
             </Button>
           </Link>
-          <Link href="/pageUnderDev">
+          <Link href="https://www.youtube.com/playlist?list=PLgToSABL-x9L29Ipv3QR3-c04SAjHhEhG">
             <Button variant="ghost" className="text-base px-8 py-2 rounded-lg font-semibold">
               Watch Demo
             </Button>

@@ -29,7 +29,7 @@ const header = async () => {
                 <span className="hidden md:inline">Import From PDF</span>
               </Button>
             </a>
-            <a href="transaction/create">
+            <a href="/transaction/create">
               <Button variant="ghost" className="flex items-center gap-2">
                 <PenBox size={18} />
                 <span className="hidden md:inline">Add Transaction</span>
