@@ -211,24 +211,6 @@ Watch a walkthrough of all features here:
 
 ---
 
-## Note to Interviewer
-
-> **Hi there!**  
-> I'm actively working on additional enhancements and polishing features beyond the assignment scope on my **personal development branch**.  
-> These include:
->
-> - More accurate parsing of banks’ PDFs using Gemini Pro
-> - Unified dashboard widgets (metrics, 7-day trends)
-> - Performance cleanups on larger datasets
->
-> You’re welcome to browse that work as well:
->
-> ```
-> Branch: /personal
-> ```
-
-Let me know if you’d like a preview or demo of that work.
-
 ## Contact
 
 For questions, feedback, or demo requests, please [open an issue](https://github.com/Bhumil1312/PennyWise/issues) or contact [@Bhumil1312](https://github.com/Bhumil1312).
