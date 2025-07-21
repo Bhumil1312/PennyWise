@@ -130,15 +130,16 @@ This project was developed as part of the interview assignment for the Typeface 
 You’ll need multiple terminals to run everything locally.
 
 ### 1. Run the main app
+```
 npm run dev
-
-text
+```
 
 ### 2. Run Inngest Dev Server (for email triggers & background jobs)
+```
 npx inngest-cli@latest dev
+```
 
 make sure your '/api/inngest' source is working
-text
 
 > ⚠️ If you don’t have `inngest-cli` installed:
 > ```
@@ -146,9 +147,9 @@ text
 > ```
 
 ### 3. Run Email Testing Tool (like MailDev or any SMTP dev server)
+```
 npm run email
-
-text
+```
 
 This enables you to test triggered emails (e.g., 80% budget warning).
 
@@ -159,16 +160,15 @@ This enables you to test triggered emails (e.g., 80% budget warning).
 To work on custom features or collaborate:
 
 ### Create & Switch to a Branch:
+```
 git checkout -b feature/my-new-feature
-
-text
-
+```
 ### Add, Commit & Push:
+```
 git add .
 git commit -m "Added new income chart component"
 git push -u origin feature/my-new-feature
-
-text
+```
 
 Once pushed, collaborators and reviewers (including interviewers) can check your work in that branch.
 
