@@ -2,7 +2,7 @@
 
 **A Modern Personal Finance Tracker**  
 **Assignment Submission – Typeface AI Recruitment (Full Stack)**  
-Author: [Bhumil1312](https://github.com/Bhumil1312)
+Developer: [Bhumil1312](https://github.com/Bhumil1312)
 
 ---
 
@@ -17,7 +17,6 @@ Author: [Bhumil1312](https://github.com/Bhumil1312)
 - [Limitations](#limitations)
 - [Demo](#demo)
 - [Contact](#contact)
-- [License](#license)
 
 ---
 
