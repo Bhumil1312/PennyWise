@@ -12,10 +12,12 @@ Developer: [Bhumil1312](https://github.com/Bhumil1312)
 - [Features](#features)
 - [Technology Stack](#technology-stack)
 - [Setup Instructions](#setup-instructions)
-- [Folder Structure](#folder-structure)
+- [Development & Run Commands](#development--run-commands)
+- [Git Workflow Instructions](#git-workflow-instructions)
 - [Assignment Deliverables](#assignment-deliverables)
 - [Limitations](#limitations)
 - [Demo](#demo)
+- [Note to Interviewer](#note-to-interviewer)
 - [Contact](#contact)
 
 ---
@@ -33,53 +35,53 @@ This project was developed as part of the interview assignment for the Typeface 
 ### Core Functionality
 
 - **Multi-Account Support**  
-  Create and manage separate budgets and dashboards for multiple financial accounts.
+  Manage separate budgets and dashboards for each account.
 
 - **Categorized Income & Expenses**  
-  Add and edit categorized income/expense entries with full form validation.
+  Add/edit categorized transactions with form validation.
 
 - **Date-Filtered Transactions**  
-  Filter and view transactions by date for detailed recordkeeping.
+  View transactions by specific date ranges.
 
 - **Persistent Data Storage**  
-  Data is persisted in PostgreSQL via Prisma ORM.
+  Stores data in PostgreSQL via Prisma ORM.
 
-- **Authenticated Multi-User Access**  
-  Each user has secure access to their own account and transactions using Clerk.dev authentication.
+- **Secure Multi-User Access**  
+  Account-level isolation via Clerk.dev authentication.
 
 ---
 
 ### Advanced & Bonus Features
 
-- **Receipt Upload with AI Parsing (Image)**  
-  Upload POS receipts to automatically extract and prefill transaction details using Gemini AI.
+- **Receipt Upload with AI Parsing**  
+  Upload POS receipts → auto-extract details with Gemini AI.
 
-- **Automated Email Alerts (at 85% Spend)**  
-  Email notifications are sent when a user approaches 85% of their budget in any account.
+- **Automated Email Alerts (85% Spending)**  
+  Users get alerted when budget usage reaches 85%.
 
-- **Bulk Transaction Import from PDF (In Progress)**  
-  Upload a full PDF bank statement and extract multiple transactions. The UI and Gemini API integration are implemented; parsing accuracy is currently being refined.
+- **Bulk PDF Statement Import (In Progress)**  
+  Extract multiple transactions from uploaded PDFs using LLM.
 
-- **Visual Financial Analytics**  
-  Dynamic charts show expenses by category and over time, per account.
+- **Visual Dashboards + Charts**  
+  See trends, by category & over time.
 
-- **Paginated Listing APIs**  
-  All list views, such as transaction history, support pagination and filters.
+- **Paginated Listings & APIs**  
+  APIs for transaction listing and filtering with pagination.
 
 ---
 
 ## Technology Stack
 
-| Layer         | Technology                                 |
-|---------------|---------------------------------------------|
-| Frontend      | Next.js (App Router), React, Tailwind CSS   |
-| UI Components | Shadcn/UI, React Hook Form, Zod             |
-| Backend       | Next.js API Routes                          |
-| AI/OCR        | Google Gemini API (Vision and Text API)     |
-| ORM/Database  | Prisma ORM, PostgreSQL                      |
-| Authentication| Clerk.dev                                   |
-| Emails        | Nodemailer (SMTP)                           |
-| Deployment    | Local environment (configurable for cloud)  |
+| Layer         | Details                                           |
+|---------------|---------------------------------------------------|
+| Frontend      | Next.js (App Router), Tailwind CSS                |
+| UI/UX         | Shadcn/UI, React Hook Form, Zod                   |
+| Backend       | Next.js API Routes                                |
+| AI Integration| Google Gemini API for OCR/doc parsing             |
+| ORM/Database  | Prisma + PostgreSQL                               |
+| Auth          | Clerk.dev                                         |
+| Email         | Nodemailer (SMTP), Local email testing via Devbox |
+| Jobs/Events   | Inngest                                           |
 
 ---
 
@@ -87,87 +89,145 @@ This project was developed as part of the interview assignment for the Typeface 
 
 ### Prerequisites
 
-- Node.js 18 or higher
-- PostgreSQL database
-- Gemini API Key (Google Generative AI)
-- Clerk.dev project and keys
-- SMTP credentials (for notification emails)
+- Node.js 18+
+- A PostgreSQL database
+- Gemini API Key
+- Clerk project/API keys
+- SMTP credentials (for alerts)
 
 ### Installation
 
-1. Clone the repository:
+1. Clone the repository and install dependencies:
     ```
     git clone https://github.com/Bhumil1312/PennyWise.git
     cd PennyWise
-    ```
-
-2. Install dependencies:
-    ```
     npm install
     ```
 
-3. Prepare environment config:
+2. Copy environment configuration:
     ```
     cp .env.example .env.local
     ```
 
-4. Set your environment variables:
+3. Set environment variables in `.env.local`:
     - `DATABASE_URL`
     - `CLERK_SECRET_KEY`
     - `CLERK_PUBLISHABLE_KEY`
     - `GEMINI_API_KEY`
     - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`
+    - `NEXT_PUBLIC_CLERK_FRONTEND_API` (optional)
 
-5. Run migrations:
+4. Set up Prisma DB:
     ```
     npx prisma migrate dev
+    npx prisma generate
     ```
 
-6. Start development server:
-    ```
-    npm run dev
-    ```
+---
+
+## Development & Run Commands
+
+You’ll need multiple terminals to run everything locally.
+
+### 1. Run the main app
+```
+npm run dev
+```
+
+### 2. Run Inngest Dev Server (for email triggers & background jobs)
+```
+npx inngest-cli@latest dev
+```
+
+make sure your '/api/inngest' source is working
+
+> ⚠️ If you don’t have `inngest-cli` installed:
+> ```
+> npm install -g inngest-cli
+> ```
+
+### 3. Run Email Testing Tool (like MailDev or any SMTP dev server)
+```
+npm run email
+```
+
+This enables you to test triggered emails (e.g., 80% budget warning).
+
+---
+
+## Git Workflow Instructions
+
+To work on custom features or collaborate:
+
+### Create & Switch to a Branch:
+```
+git checkout -b feature/my-new-feature
+```
+### Add, Commit & Push:
+```
+git add .
+git commit -m "Added new income chart component"
+git push -u origin feature/my-new-feature
+```
+
+Once pushed, collaborators and reviewers (including interviewers) can check your work in that branch.
 
 ---
 
 ## Assignment Deliverables
 
-### Implemented as per Typeface AI Project Specifications
-
-| Requirement                                              | Status             |
-|-----------------------------------------------------------|--------------------|
-| Create/edit income and expense entries                    | ✅ Implemented     |
-| List entries by time range                                | ✅ Implemented     |
-| Display visual graphs by category and over time           | ✅ Implemented     |
-| Extract transaction data from POS receipts                | ✅ Implemented (images) |
-| Upload and parse PDF bank statement (bonus)               | ⚠️ In Progress     |
-| Provide APIs separately from frontend                     | ✅ Done            |
-| Persist data in database                                  | ✅ Prisma + PostgreSQL |
-| Authentication and account isolation                      | ✅ Clerk integrated |
-| Bonus: Automated email alerts at 85% spend per account    | ✅ Implemented     |
-| Bonus: Paginated listing for transaction history          | ✅ Implemented     |
+| Feature / Requirement                                  | Status             |
+|--------------------------------------------------------|--------------------|
+| Add/Edit income and expense entries                    | ✅ Implemented     |
+| View entries by date range                             | ✅ Implemented     |
+| Charts by category and over time                       | ✅ Implemented     |
+| Upload POS receipts and extract data                   | ✅ Done (Gemini AI)|
+| Upload & parse PDF (batch transactions)                | ⚠️ In Progress     |
+| APIs separate from frontend                            | ✅ Implemented     |
+| Persistent PostgreSQL storage                          | ✅ With Prisma     |
+| Auth for users and data isolation                      | ✅ With Clerk      |
+| Bonus: Email alerts at 85% budget                      | ✅ Implemented     |
+| Bonus: Paginated transactions                          | ✅ Done            |
 
 ---
 
 ## Limitations
 
-- **PDF Bank Statement Parsing (AI/LLM Accuracy)**  
-  Currently, tabular statement PDFs are sent to Gemini pro-vision for parsing. While the UI, upload, and API routing are complete, Gemini's return format is sometimes inconsistent and causes JSON parsing issues. This feature is being actively refined and integrated.
+- **PDF Parser Still Evolving**  
+  Gemini AI output from PDF tables can be inconsistent. I'm working on structuring the response into clean transaction arrays.
 
-- **OCR Limitations (Image Receipts)**  
-  Poor-quality or stylized receipts may produce inconsistent or incomplete data from AI models.
+- **Edge Case Accuracy (OCR)**  
+  Faded or skewed receipts sometimes confuse Gemini’s OCR, resulting in partially incorrect data.
 
-- **Deployment-Ready Setup**  
-  Configuration for production deployment (e.g., Vercel, Railway, Render) is not included but easily adjustable.
+- **Live Hosting Option**  
+  This README assumes local dev setup. A production-ready deployment config (e.g., Vercel or Render) can be added easily.
 
 ---
 
 ## Demo
 
-Watch the full working demo and feature walkthrough  
+Watch a walkthrough of all features here:  
 👉 [PennyWise Demo Playlist – YouTube](https://www.youtube.com/playlist?list=PLgToSABL-x9L29Ipv3QR3-c04SAjHhEhG)
 
 ---
+
+## Note to Interviewer
+
+> **Hi there!**  
+> I'm actively working on additional enhancements and polishing features beyond the assignment scope on my **personal development branch**.  
+> These include:
+>
+> - More accurate parsing of banks’ PDFs using Gemini Pro
+> - Unified dashboard widgets (metrics, 7-day trends)
+> - Performance cleanups on larger datasets
+>
+> You’re welcome to browse that work as well:
+>
+> ```
+> Branch: /personal
+> ```
+
+Let me know if you’d like a preview or demo of that work.
 
 ## Contact
 
