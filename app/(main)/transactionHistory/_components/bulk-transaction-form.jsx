@@ -59,7 +59,7 @@ export function AddBulk_Transactions({ accounts }) {
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* PDF Scanner*/}
       <PDFScanner onScanComplete={handleScanComplete} />
-      {/* Account & Category Selectors */}
+      {/* Account Selectors */}
       {transactions.length > 0 && (
         <div className="space-y-4 mt-6">
           <div className="grid md:grid-cols-2 gap-4">
@@ -83,7 +83,7 @@ export function AddBulk_Transactions({ accounts }) {
           {/* Transaction Preview */}
           <div className="overflow-x-auto border rounded-md">
             <table className="w-full text-sm">
-              <thead className="bg-gray-100">
+              <thead className="bg-gray-100 text-gray-1000">
                 <tr>
                   <th className="p-2 text-left">Date</th>
                   <th className="p-2 text-left">Category</th>

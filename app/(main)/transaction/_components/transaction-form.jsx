@@ -1,17 +1,12 @@
 "use client";
 
-// What is useEffect?
 import { useEffect } from "react";
-//What is hooks and useForm?
 import { useForm } from "react-hook-form";
-// What zod resoler means...
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useRouter, useSearchParams } from "next/navigation";
-// What is useFetch?
 import useFetch from "@/hooks/use-fetch";
-// What is sonner?
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +20,6 @@ import { createTransaction, updateTransaction } from "@/actions/transaction";
 import { transactionSchema } from "@/app/lib/schema";
 import { ReceiptScanner } from "./recipt-scanner";
 
-//Waht does this function do, how it is working what parameters and  all... in details
 export function AddTransactionForm({accounts,categories,editMode = false,initialData = null }) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -55,16 +49,12 @@ export function AddTransactionForm({accounts,categories,editMode = false,initial
             isRecurring: false,
           },
   });
-  // What this line does?
   const {loading: transactionLoading,fn: transactionFn,data: transactionResult} = useFetch(editMode ? updateTransaction : createTransaction);
-  // What unsubmit does?
   const onSubmit = (data) => {
     const formData = {
-      // what is ...data represents
       ...data,
       amount: parseFloat(data.amount),
     };
-    // Where is transactionFn is coming from?
     if (editMode) {
       transactionFn(editId, formData);
     } else {
@@ -88,7 +78,6 @@ export function AddTransactionForm({accounts,categories,editMode = false,initial
     }
   };
 
-  // What is useEffect? and how it works?
   useEffect(() => {
     if (transactionResult?.success && !transactionLoading) {
       toast.success(
@@ -101,12 +90,10 @@ export function AddTransactionForm({accounts,categories,editMode = false,initial
     }
   }, [transactionResult, transactionLoading, editMode]);
 
-  // What is watch and how it works?
   const type = watch("type");
   const isRecurring = watch("isRecurring");
   const date = watch("date");
 
-  // filteredCatagories is what ? inbuilt or...
   const filteredCategories = categories.filter(
     (category) => category.type === type
   );
@@ -114,7 +101,6 @@ export function AddTransactionForm({accounts,categories,editMode = false,initial
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
       {/* Receipt Scanner - Only show in create mode not in edit mode*/}
-      {/* What is ReceiptScanner and how it works?  onScanComplete flow*/}
       {!editMode && <ReceiptScanner onScanComplete={handleScanComplete} />}
 
       {/* Amount and Account */}
@@ -125,10 +111,8 @@ export function AddTransactionForm({accounts,categories,editMode = false,initial
             type="number"
             step="0.01"
             placeholder="0.00"
-            // What is register and how it works?
             {...register("amount")}
           />
-          {/* What is errors and how it works? Which kind of error we can expact or how can i give my custom error*/}
           {errors.amount && (
             <p className="text-sm text-red-500">{errors.amount.message}</p>
           )}
@@ -136,7 +120,6 @@ export function AddTransactionForm({accounts,categories,editMode = false,initial
 
         <div className="space-y-2">
           <label className="text-sm font-medium">Account</label>
-          {/* What is Select and structure of it likr below and flow of sub componentes? */}
           <Select
             onValueChange={(value) => setValue("accountId", value)}
             defaultValue={getValues("accountId")}
@@ -178,7 +161,6 @@ export function AddTransactionForm({accounts,categories,editMode = false,initial
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
           <SelectContent>
-            {/* What is filteredCategories and how it works?  and how it shows list whitout for loop*/}
             {filteredCategories.map((category) => (
               <SelectItem key={category.id} value={category.id}>
                 {category.name}
@@ -218,18 +200,15 @@ export function AddTransactionForm({accounts,categories,editMode = false,initial
         <Popover>
           <PopoverTrigger asChild>
             <Button
-            // What is cn and how it works?
               className={cn(
                 "w-full pl-3 text-left font-normal bg-input dark:bg-input border border-input rounded-md text-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring",
                 !date && "text-muted-foreground"
               )}
             >
-              {/* What is date parameters like PPP and how it works? */}
               {date ? format(date, "PPP") : <span>Pick a date</span>}
               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
             </Button>
           </PopoverTrigger>
-          {/* What is PopoverContent and how it works? Calander componet in it*/}
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
@@ -268,7 +247,6 @@ export function AddTransactionForm({accounts,categories,editMode = false,initial
             Set up a recurring schedule for this transaction
           </div>
         </div>
-        {/* Waht is isRecurring variable and whare it is? */}
         <Switch
           checked={isRecurring}
           onCheckedChange={(checked) => setValue("isRecurring", checked)}
@@ -307,7 +285,6 @@ export function AddTransactionForm({accounts,categories,editMode = false,initial
         </Button>
         </div>
         <div>
-        {/* hat is disable filed in Button how it loading when we are storing it and how data of transaction is added on database*/}
         <Button type="submit" variant="ghost" className="w-full" disabled={transactionLoading}>
           {transactionLoading ? (
             <>
