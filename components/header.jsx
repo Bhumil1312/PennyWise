@@ -21,7 +21,7 @@ const header = async () => {
           />
         </Link>
 
-        {/* Authentication Buttons */}
+        {/* Authentication and Transaction related Buttons */}
         <div className="flex items-center space-x-4">
           <SignedIn>
             <a href="/transactionHistory/add">

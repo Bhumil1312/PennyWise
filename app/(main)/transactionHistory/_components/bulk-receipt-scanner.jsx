@@ -9,19 +9,12 @@ import { scanPDF } from "@/actions/bulktransaction";
 
 export function PDFScanner({ onScanComplete }) {
   const fileInputRef = useRef(null);
-
-  const {
-    loading: scanPDFLoading,
-    fn: scanPDFFn,
-    data: scannedData,
-  } = useFetch(scanPDF);
-
+  const {loading: scanPDFLoading,fn: scanPDFFn,data: scannedData} = useFetch(scanPDF);
   const handlePDFScan = async (file) => {
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("PDF size should be less than 5MB");
+    if (file.size > 6 * 1024 * 1024) {
+      toast.error("PDF size should be less than 6MB");
       return;
     }
-
     await scanPDFFn(file);
   };
 

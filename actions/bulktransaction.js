@@ -9,88 +9,129 @@ import { request } from "@arcjet/next";
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY);
 
-const serializeAmount = (obj) => ({
-  ...obj,
-  amount: obj.amount.toNumber(),
-});
-export async function POST(req) {
-  const data = await req.formData();
-  const file = data.get('file');
-
-  if (!file) {
-    return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
+// Fix incomplete JSON response from Gemini and ensure valid JSON format for jason parsing
+function fixIncompleteJson(rawStr) {
+  if (!rawStr || typeof rawStr !== 'string') return rawStr;
+  let str = rawStr
+  .replace(/^```json\s*/, "")
+    .replace(/```$/, "")
+    .trim();
+  const transactionsStartIndex = str.indexOf('"transactions": [');
+  if (transactionsStartIndex === -1) {
+    return str;
   }
 
-  const buffer = Buffer.from(await file.arrayBuffer());
-  const base64 = buffer.toString('base64');
+  const prefix = str.substring(0, transactionsStartIndex + '"transactions": ['.length);
+  let arrayContent = str.substring(transactionsStartIndex + '"transactions": ['.length);
+  let braceStack = [];
+  let lastValidIndex = -1;
 
-  const model = genAI.getGenerativeModel({ model: 'gemini-pro-vision' });
-
-  const prompt = `
-This is a PDF of a bank statement in tabular format.
-Extract all transactions. Output an array of JSON objects with:
-- date (YYYY-MM-DD)
-- amount (number)
-- type ("INCOME" if it's a deposit, "EXPENSE" if it's a withdrawal)
-- description
-
-example:
-{
-  "transactions": [
-    {
-      "date": "2024-06-01",
-      "amount": 250,
-      "type": "EXPENSE",
-      "description": "ATM withdrawal"
+  for (let i = 0; i < arrayContent.length; i++) {
+    const char = arrayContent[i];
+    if (char === '{') {
+      braceStack.push(i);
+    } else if (char === '}') {
+      if (braceStack.length > 0) {
+        braceStack.pop();
+        if (braceStack.length === 0) {
+          lastValidIndex = i;
+        }
+      }
     }
-  ]
+  }
+
+  if (lastValidIndex === -1) {
+    return prefix + '] }';
+  }
+
+  let cleanedArrayContent = arrayContent.substring(0, lastValidIndex + 1);
+  cleanedArrayContent = cleanedArrayContent.trim();
+  if (cleanedArrayContent.endsWith(',')) {
+    cleanedArrayContent = cleanedArrayContent.slice(0, -1);
+  }
+  return prefix + cleanedArrayContent + '] }';
 }
 
-Do not include category. Return only JSON, no markdown or explanations.
-`;
-
+// Scan PDF
+export async function scanPDF(file) {
   try {
+    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+    // Convert File to ArrayBuffer
+    const arrayBuffer = await file.arrayBuffer();
+    // Convert ArrayBuffer to Base64
+    const base64String = Buffer.from(arrayBuffer).toString("base64");
+
+    const prompt = `
+    Analyze this transactions (eg.bank statement) PDF containing a table of transactions. Extract all transactions in JSON format.
+    Return an object with a "transactions" property that is an array of transactions.
+    Each transaction should have these fields:
+      - "category": string,
+      - "type": string,
+      - "amount": number,
+      - "date": Date,
+      - "description": string
+
+    Category should be from this list(select based on notes or description of transaction/ if not then Other ...):
+    ["Salary","Freelance","Investments","Business","Rental","Other Income"] and then set type to INCOME.
+    or ["Housing","Transportation","Groceries","Utilities","Entertainment","Food","Shopping","Healthcare","Education","Personal Care","Travel","Insurance","Gifts & Donations","Bills & Fees","Other Expenses"] and then set type to EXPENSE.
+
+    Here is the expected JSON format:
+
+    {
+      "transactions": [
+        {
+          "category": "Business",
+          "type": "INCOME",
+          "amount": 1234.99,
+          "date": "2025-06-25",
+          "description": "Payment from client"
+        },
+        { ... }, // more transactions
+      ]
+    }
+
+    If the PDF cannot be parsed or no transactions exist, return an empty object.
+    Only respond with valid JSON.
+  `;
+
+
     const result = await model.generateContent([
-      prompt,
       {
         inlineData: {
-          data: base64,
-          mimeType: 'application/pdf',
+          data: base64String,
+          mimeType: file.type,
         },
       },
+      prompt,
     ]);
 
-    const responseText = await result.response.text();
-    console.log("🐛 Gemini raw response:\n", responseText);
+    const response = await result.response;
+    const text = response.text();
+    console.log("Gemini raw response:", text);
+    const fixedText = fixIncompleteJson(text);
 
-const cleaned = responseText
-  .trim()
-  .replace(/^```(?:json)?\n?/, '')
-  .replace(/```$/, '');
-
-
-    let transactions;
     try {
-      transactions = JSON.parse(cleaned);
-      if (!Array.isArray(transactions)) throw new Error("Not an array");
-    } catch (e) {
-      console.error("JSON parse error or output not array", cleaned, e);
-      return NextResponse.json({ error: 'Failed to parse PDF' }, { status: 500 });
+      const data = JSON.parse(fixedText);
+      return data;
+    } catch (parseError) {
+      console.error("Error parsing JSON response:", parseError);
+      throw new Error("Invalid response format from Gemini");
     }
-
-    return NextResponse.json({ transactions });
-  } catch (err) {
-    console.error("Gemini error:", err);
-    return NextResponse.json({ error: 'Failed to process PDF' }, { status: 500 });
+  } catch (error) {
+    console.error("Error scanning PDF:", error);
+    throw new Error("Failed to scan PDF");
   }
 }
 
-// Create Transaction
-export async function createTransaction(data) {
+//Add Bulk Transactions
+export async function createBulkTransactions( accountId, transactions) {
   try {
+    // Fetch user (authorization)
     const { userId } = await auth();
     if (!userId) throw new Error("Unauthorized");
 
+    
     // Get request data for ArcJet
     const req = await request();
 
@@ -125,9 +166,10 @@ export async function createTransaction(data) {
       throw new Error("User not found");
     }
 
+    // Fetch account and validate ownership
     const account = await db.account.findUnique({
       where: {
-        id: data.accountId,
+        id: accountId,
         userId: user.id,
       },
     });
@@ -136,249 +178,35 @@ export async function createTransaction(data) {
       throw new Error("Account not found");
     }
 
-    // Calculate new balance
-    const balanceChange = data.type === "EXPENSE" ? -data.amount : data.amount;
-    const newBalance = account.balance.toNumber() + balanceChange;
+    // Calculate new balance after adding all transactions
+    let totalBalance = account.balance.toNumber();
+    for (const txn of transactions) {
+      const amountChange = txn.type === "EXPENSE" ? -parseFloat(txn.amount) : parseFloat(txn.amount);
+      totalBalance += amountChange;
+    }
 
-    // Create transaction and update account balance
-    const transaction = await db.$transaction(async (tx) => {
-      const newTransaction = await tx.transaction.create({
-        data: {
-          ...data,
-          userId: user.id,
-          nextRecurringDate:
-            data.isRecurring && data.recurringInterval
-              ? calculateNextRecurringDate(data.date, data.recurringInterval)
-              : null,
-        },
-      });
-
-      await tx.account.update({
-        where: { id: data.accountId },
-        data: { balance: newBalance },
-      });
-
-      return newTransaction;
-    });
-
-    revalidatePath("/dashboard");
-    revalidatePath(`/account/${transaction.accountId}`);
-
-    return { success: true, data: serializeAmount(transaction) };
-  } catch (error) {
-    throw new Error(error.message);
-  }
-}
-
-export async function getTransaction(id) {
-  const { userId } = await auth();
-  if (!userId) throw new Error("Unauthorized");
-
-  const user = await db.user.findUnique({
-    where: { clerkUserId: userId },
-  });
-
-  if (!user) throw new Error("User not found");
-
-  const transaction = await db.transaction.findUnique({
-    where: {
-      id,
+    // Prepare transaction data with userId and some defaults if needed
+    const txData = transactions.map((txn) => ({
+      ...txn,
       userId: user.id,
-    },
-  });
+      status: "COMPLETED",
+      createdAt: txn.date,
+      updatedAt: txn.date,
+    }));
 
-  if (!transaction) throw new Error("Transaction not found");
-
-  return serializeAmount(transaction);
-}
-
-export async function updateTransaction(id, data) {
-  try {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
-
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    if (!user) throw new Error("User not found");
-
-    // Get original transaction to calculate balance change
-    const originalTransaction = await db.transaction.findUnique({
-      where: {
-        id,
-        userId: user.id,
-      },
-      include: {
-        account: true,
-      },
-    });
-
-    if (!originalTransaction) throw new Error("Transaction not found");
-
-    // Calculate balance changes
-    const oldBalanceChange =
-      originalTransaction.type === "EXPENSE"
-        ? -originalTransaction.amount.toNumber()
-        : originalTransaction.amount.toNumber();
-
-    const newBalanceChange =
-      data.type === "EXPENSE" ? -data.amount : data.amount;
-
-    const netBalanceChange = newBalanceChange - oldBalanceChange;
-
-    // Update transaction and account balance in a transaction
-    const transaction = await db.$transaction(async (tx) => {
-      const updated = await tx.transaction.update({
-        where: {
-          id,
-          userId: user.id,
-        },
-        data: {
-          ...data,
-          nextRecurringDate:
-            data.isRecurring && data.recurringInterval
-              ? calculateNextRecurringDate(data.date, data.recurringInterval)
-              : null,
-        },
-      });
-
-      // Update account balance
+    // Perform bulk insert inside a transaction and update balance
+    await db.$transaction(async (tx) => {
+      await tx.transaction.createMany({ data: txData });
       await tx.account.update({
-        where: { id: data.accountId },
-        data: {
-          balance: {
-            increment: netBalanceChange,
-          },
-        },
+        where: { id: accountId },
+        data: { balance: totalBalance },
       });
-
-      return updated;
     });
-
     revalidatePath("/dashboard");
-    revalidatePath(`/account/${data.accountId}`);
+    revalidatePath(`/account/${accountId}`);
 
-    return { success: true, data: serializeAmount(transaction) };
+    return { success: true, data: { accountId, count: transactions.length } };
   } catch (error) {
     throw new Error(error.message);
   }
-}
-
-// Get User Transactions
-export async function getUserTransactions(query = {}) {
-  try {
-    const { userId } = await auth();
-    if (!userId) throw new Error("Unauthorized");
-
-    const user = await db.user.findUnique({
-      where: { clerkUserId: userId },
-    });
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    const transactions = await db.transaction.findMany({
-      where: {
-        userId: user.id,
-        ...query,
-      },
-      include: {
-        account: true,
-      },
-      orderBy: {
-        date: "desc",
-      },
-    });
-
-    return { success: true, data: transactions };
-  } catch (error) {
-    throw new Error(error.message);
-  }
-}
-
-// Scan PDF
-export async function scanPDF(file) {
-  try {
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
-
-    // Convert File to ArrayBuffer
-    const arrayBuffer = await file.arrayBuffer();
-    // Convert ArrayBuffer to Base64
-    const base64String = Buffer.from(arrayBuffer).toString("base64");
-
-    const prompt = `
-      Analyze this receipt image and extract the following information in JSON format:
-      - Total amount (just the number)
-      - Date (in ISO format)
-      - Description or items purchased (brief summary)
-      - Merchant/store name
-      - Suggested category (one of: housing,transportation,groceries,utilities,entertainment,food,shopping,healthcare,education,personal,travel,insurance,gifts,bills,other-expense )
-      
-      Only respond with valid JSON in this exact format:
-      {
-        "amount": number,
-        "date": "ISO date string",
-        "description": "string",
-        "merchantName": "string",
-        "category": "string"
-      }
-
-      If its not a recipt, return an empty object
-    `;
-
-    const result = await model.generateContent([
-      {
-        inlineData: {
-          data: base64String,
-          mimeType: file.type,
-        },
-      },
-      prompt,
-    ]);
-
-    const response = await result.response;
-    const text = response.text();
-    const cleanedText = text.replace(/```(?:json)?\n?/g, "").trim();
-
-    try {
-      const data = JSON.parse(cleanedText);
-      return {
-        amount: parseFloat(data.amount),
-        date: new Date(data.date),
-        description: data.description,
-        category: data.category,
-        merchantName: data.merchantName,
-      };
-    } catch (parseError) {
-      console.error("Error parsing JSON response:", parseError);
-      throw new Error("Invalid response format from Gemini");
-    }
-  } catch (error) {
-    console.error("Error scanning PDF:", error);
-    throw new Error("Failed to scan PDF");
-  }
-}
-
-// Helper function to calculate next recurring date
-function calculateNextRecurringDate(startDate, interval) {
-  const date = new Date(startDate);
-
-  switch (interval) {
-    case "DAILY":
-      date.setDate(date.getDate() + 1);
-      break;
-    case "WEEKLY":
-      date.setDate(date.getDate() + 7);
-      break;
-    case "MONTHLY":
-      date.setMonth(date.getMonth() + 1);
-      break;
-    case "YEARLY":
-      date.setFullYear(date.getFullYear() + 1);
-      break;
-  }
-
-  return date;
 }

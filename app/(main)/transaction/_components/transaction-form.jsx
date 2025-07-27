@@ -1,29 +1,23 @@
 "use client";
 
+// What is useEffect?
 import { useEffect } from "react";
+//What is hooks and useForm?
 import { useForm } from "react-hook-form";
+// What zod resoler means...
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CalendarIcon, Loader2 } from "lucide-react";
 import { format } from "date-fns";
 import { useRouter, useSearchParams } from "next/navigation";
+// What is useFetch?
 import useFetch from "@/hooks/use-fetch";
+// What is sonner?
 import { toast } from "sonner";
-
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Switch } from "@/components/ui/switch";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import {Select,SelectContent,SelectItem,SelectTrigger,SelectValue } from "@/components/ui/select";
+import {Popover,PopoverContent,PopoverTrigger} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { CreateAccountDrawer } from "@/components/create-account-drawer";
 import { cn } from "@/lib/utils";
@@ -31,25 +25,12 @@ import { createTransaction, updateTransaction } from "@/actions/transaction";
 import { transactionSchema } from "@/app/lib/schema";
 import { ReceiptScanner } from "./recipt-scanner";
 
-export function AddTransactionForm({
-  accounts,
-  categories,
-  editMode = false,
-  initialData = null,
-}) {
+//Waht does this function do, how it is working what parameters and  all... in details
+export function AddTransactionForm({accounts,categories,editMode = false,initialData = null }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const editId = searchParams.get("edit");
-
-  const {
-    register,
-    handleSubmit,
-    formState: { errors },
-    watch,
-    setValue,
-    getValues,
-    reset,
-  } = useForm({
+  const {register,handleSubmit,formState: { errors },watch,setValue,getValues,reset} = useForm({
     resolver: zodResolver(transactionSchema),
     defaultValues:
       editMode && initialData
@@ -74,19 +55,16 @@ export function AddTransactionForm({
             isRecurring: false,
           },
   });
-
-  const {
-    loading: transactionLoading,
-    fn: transactionFn,
-    data: transactionResult,
-  } = useFetch(editMode ? updateTransaction : createTransaction);
-
+  // What this line does?
+  const {loading: transactionLoading,fn: transactionFn,data: transactionResult} = useFetch(editMode ? updateTransaction : createTransaction);
+  // What unsubmit does?
   const onSubmit = (data) => {
     const formData = {
+      // what is ...data represents
       ...data,
       amount: parseFloat(data.amount),
     };
-
+    // Where is transactionFn is coming from?
     if (editMode) {
       transactionFn(editId, formData);
     } else {
@@ -97,6 +75,7 @@ export function AddTransactionForm({
   const handleScanComplete = (scannedData) => {
     if (scannedData) {
       setValue("amount", scannedData.amount.toString());
+      // What new Date() does in genral?
       setValue("date", new Date(scannedData.date));
       if (scannedData.description) {
         setValue("description", scannedData.description);
@@ -104,10 +83,12 @@ export function AddTransactionForm({
       if (scannedData.category) {
         setValue("category", scannedData.category);
       }
+      //How toast usage
       toast.success("Receipt scanned successfully");
     }
   };
 
+  // What is useEffect? and how it works?
   useEffect(() => {
     if (transactionResult?.success && !transactionLoading) {
       toast.success(
@@ -120,17 +101,20 @@ export function AddTransactionForm({
     }
   }, [transactionResult, transactionLoading, editMode]);
 
+  // What is watch and how it works?
   const type = watch("type");
   const isRecurring = watch("isRecurring");
   const date = watch("date");
 
+  // filteredCatagories is what ? inbuilt or...
   const filteredCategories = categories.filter(
     (category) => category.type === type
   );
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-      {/* Receipt Scanner - Only show in create mode */}
+      {/* Receipt Scanner - Only show in create mode not in edit mode*/}
+      {/* What is ReceiptScanner and how it works?  onScanComplete flow*/}
       {!editMode && <ReceiptScanner onScanComplete={handleScanComplete} />}
 
       {/* Amount and Account */}
@@ -141,8 +125,10 @@ export function AddTransactionForm({
             type="number"
             step="0.01"
             placeholder="0.00"
+            // What is register and how it works?
             {...register("amount")}
           />
+          {/* What is errors and how it works? Which kind of error we can expact or how can i give my custom error*/}
           {errors.amount && (
             <p className="text-sm text-red-500">{errors.amount.message}</p>
           )}
@@ -150,6 +136,7 @@ export function AddTransactionForm({
 
         <div className="space-y-2">
           <label className="text-sm font-medium">Account</label>
+          {/* What is Select and structure of it likr below and flow of sub componentes? */}
           <Select
             onValueChange={(value) => setValue("accountId", value)}
             defaultValue={getValues("accountId")}
@@ -191,6 +178,7 @@ export function AddTransactionForm({
             <SelectValue placeholder="Select category" />
           </SelectTrigger>
           <SelectContent>
+            {/* What is filteredCategories and how it works?  and how it shows list whitout for loop*/}
             {filteredCategories.map((category) => (
               <SelectItem key={category.id} value={category.id}>
                 {category.name}
@@ -223,21 +211,25 @@ export function AddTransactionForm({
           )}
         </div>
       </div>
+
       {/* Date */}
       <div className="space-y-2">
         <label className="text-sm font-medium">Date</label>
         <Popover>
           <PopoverTrigger asChild>
             <Button
+            // What is cn and how it works?
               className={cn(
                 "w-full pl-3 text-left font-normal bg-input dark:bg-input border border-input rounded-md text-foreground hover:bg-accent hover:text-accent-foreground focus-visible:ring-2 focus-visible:ring-ring",
                 !date && "text-muted-foreground"
               )}
             >
+              {/* What is date parameters like PPP and how it works? */}
               {date ? format(date, "PPP") : <span>Pick a date</span>}
               <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
             </Button>
           </PopoverTrigger>
+          {/* What is PopoverContent and how it works? Calander componet in it*/}
           <PopoverContent className="w-auto p-0" align="start">
             <Calendar
               mode="single"
@@ -276,6 +268,7 @@ export function AddTransactionForm({
             Set up a recurring schedule for this transaction
           </div>
         </div>
+        {/* Waht is isRecurring variable and whare it is? */}
         <Switch
           checked={isRecurring}
           onCheckedChange={(checked) => setValue("isRecurring", checked)}
@@ -286,10 +279,7 @@ export function AddTransactionForm({
       {isRecurring && (
         <div className="space-y-2">
           <label className="text-sm font-medium">Recurring Interval</label>
-          <Select
-            onValueChange={(value) => setValue("recurringInterval", value)}
-            defaultValue={getValues("recurringInterval")}
-          >
+          <Select onValueChange={(value) => setValue("recurringInterval", value)} defaultValue={getValues("recurringInterval")}>
             <SelectTrigger>
               <SelectValue placeholder="Select interval" />
             </SelectTrigger>
@@ -300,11 +290,7 @@ export function AddTransactionForm({
               <SelectItem value="YEARLY">Yearly</SelectItem>
             </SelectContent>
           </Select>
-          {errors.recurringInterval && (
-            <p className="text-sm text-red-500">
-              {errors.recurringInterval.message}
-            </p>
-          )}
+          {errors.recurringInterval && (<p className="text-sm text-red-500">{errors.recurringInterval.message}</p>)}
         </div>
       )}
 
@@ -321,7 +307,8 @@ export function AddTransactionForm({
         </Button>
         </div>
         <div>
-        <Button type="submit" className="w-full" disabled={transactionLoading}>
+        {/* hat is disable filed in Button how it loading when we are storing it and how data of transaction is added on database*/}
+        <Button type="submit" variant="ghost" className="w-full" disabled={transactionLoading}>
           {transactionLoading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />
