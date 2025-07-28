@@ -40,6 +40,11 @@ const header = async () => {
                 <span className="hidden md:inline">Dashboard</span>
               </Button>
             </Link>
+            <Link href="/pricing">
+              <Button variant="ghost" className="flex items-center gap-2" >
+                <span className="hidden md:inline">Pricing</span>
+              </Button>
+            </Link>
           </SignedIn>
           <SignedOut>
             <SignInButton forceRedirectUrl="/dashboard">

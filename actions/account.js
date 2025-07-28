@@ -1,8 +1,10 @@
 "use server";
 
 import { db } from "@/lib/prisma";
+import { SubscriptionTier } from "@prisma/client";
 import { auth } from "@clerk/nextjs/server";
 import { revalidatePath } from "next/cache";
+import { toast } from "sonner";
 
 const serializeDecimal = (obj) => {
   const serialized = { ...obj };
@@ -167,4 +169,35 @@ export async function getAccounts() {
   ...account,
   balance: account.balance.toNumber(), // serialize decimal
  }));
+}
+
+export async function updateSubscription(newSubscriptionTier) {
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
+
+    const user = await db.user.findUnique({
+      where: { clerkUserId: userId },
+    });
+
+    if (!user) throw new Error("User not found");
+
+    // Update the user's subscription, reset quota, and set new period start
+    await db.user.update({
+      where: { clerkUserId: userId },
+      data: {
+        subscription: SubscriptionTier[newSubscriptionTier],
+        usageQuota: 0,
+        quotaPeriodStart: new Date(),
+      },
+    });
+
+    revalidatePath("/pricing"); // Revalidate the pricing page to show updated status
+    revalidatePath("/dashboard"); // Revalidate dashboard as well
+
+    return { success: true, message: `Successfully updated to ${newSubscriptionTier} plan!` };
+  } catch (error) {
+    console.error("Error updating subscription:", error);
+    return { success: false, error: error.message };
+  }
 }

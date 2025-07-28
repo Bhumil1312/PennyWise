@@ -4,9 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { GoogleGenerativeAI } from "@google/generative-ai";
-import aj from "@/lib/arcjet";
-import { request } from "@arcjet/next";
-
+import { checkQuota, incrementQuota } from "@/lib/quota";
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_GENERATIVE_AI_API_KEY);
 
 const serializeAmount = (obj) => ({
@@ -60,37 +58,17 @@ Return array of transactions only as JSON.
   }
 }
 
-
 // Create Transaction
 export async function createTransaction(data) {
   try {
     const { userId } = await auth();
+    console.log("Authenticated userId:", userId);
     if (!userId) throw new Error("Unauthorized");
 
-    // Get request data for ArcJet
-    const req = await request();
-
-    // Check rate limit
-    const decision = await aj.protect(req, {
-      userId,
-      requested: 1, // Specify how many tokens to consume
-    });
-
-    if (decision.isDenied()) {
-      if (decision.reason.isRateLimit()) {
-        const { remaining, reset } = decision.reason;
-        console.error({
-          code: "RATE_LIMIT_EXCEEDED",
-          details: {
-            remaining,
-            resetInSeconds: reset,
-          },
-        });
-
-        throw new Error("Too many requests. Please try again later.");
-      }
-
-      throw new Error("Request blocked");
+    // Check user's quota
+    const quotaCheck = await checkQuota();
+    if (!quotaCheck.allowed) {
+      throw new Error(quotaCheck.error || "Usage limit reached. Please upgrade your plan.");
     }
 
     const user = await db.user.findUnique({
@@ -100,6 +78,7 @@ export async function createTransaction(data) {
     if (!user) {
       throw new Error("User not found");
     }
+    console.log("Clerk userId:", user.clerkUserId);
 
     const account = await db.account.findUnique({
       where: {
@@ -107,6 +86,7 @@ export async function createTransaction(data) {
         userId: user.id,
       },
     });
+    console.log("Account userId:", account.userId);
 
     if (!account) {
       throw new Error("Account not found");
@@ -128,6 +108,7 @@ export async function createTransaction(data) {
               : null,
         },
       });
+      console.log("Transaction userId:", newTransaction.userId);
 
       await tx.account.update({
         where: { id: data.accountId },
@@ -139,6 +120,9 @@ export async function createTransaction(data) {
 
     revalidatePath("/dashboard");
     revalidatePath(`/account/${transaction.accountId}`);
+
+    // Increment user's quota after successful transaction creation
+    await incrementQuota();
 
     return { success: true, data: serializeAmount(transaction) };
   } catch (error) {

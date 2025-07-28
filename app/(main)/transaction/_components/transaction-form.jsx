@@ -65,7 +65,6 @@ export function AddTransactionForm({accounts,categories,editMode = false,initial
   const handleScanComplete = (scannedData) => {
     if (scannedData) {
       setValue("amount", scannedData.amount.toString());
-      // What new Date() does in genral?
       setValue("date", new Date(scannedData.date));
       if (scannedData.description) {
         setValue("description", scannedData.description);
@@ -73,7 +72,6 @@ export function AddTransactionForm({accounts,categories,editMode = false,initial
       if (scannedData.category) {
         setValue("category", scannedData.category);
       }
-      //How toast usage
       toast.success("Receipt scanned successfully");
     }
   };

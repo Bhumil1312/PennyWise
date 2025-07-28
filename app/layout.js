@@ -60,7 +60,7 @@ export default function RootLayout({ children }) {
                 <nav className="flex flex-col gap-4 text-gray-600">
                   <a href="https://www.youtube.com/playlist?list=PLgToSABL-x9L29Ipv3QR3-c04SAjHhEhG" className="hover:text-white transition">Watch Demo</a>
                   <a href="/#features" className="hover:text-white transition">Features</a>
-                  <a href="/pageUnderDev" className="hover:text-white transition">Pricing</a>
+                  <a href="/pricing" className="hover:text-white transition">Pricing</a>
                   <a href="/pageUnderDev" className="hover:text-white transition">Contact</a>
                 </nav>
                 {/* Policy & Terms - Vertical list */}

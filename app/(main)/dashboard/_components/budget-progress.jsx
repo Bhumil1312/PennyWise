@@ -68,7 +68,7 @@ export function BudgetProgress({ initialBudget, currentExpenses }) {
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-br from-white/20 via-white/5 to-transparent" />
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <div className="flex-1">
-          <CardTitle className="text-sm font-medium">
+          <CardTitle className="text-xl font-medium">
             Monthly Budget (Default Account)
           </CardTitle>
           <div className="flex items-center gap-2 mt-1">
@@ -102,7 +102,7 @@ export function BudgetProgress({ initialBudget, currentExpenses }) {
               </div>
             ) : (
               <>
-                <CardDescription>
+                <CardDescription className={"text-white"}>
                   {initialBudget
                     ? `$${currentExpenses.toFixed(
                         2
@@ -127,7 +127,7 @@ export function BudgetProgress({ initialBudget, currentExpenses }) {
           <div className="space-y-2">
             <Progress
               value={percentUsed}
-              extraStyles={`${
+              indicatorClassName={`${
                 // add to Progress component
                 percentUsed >= 90
                   ? "bg-red-500"
@@ -136,7 +136,7 @@ export function BudgetProgress({ initialBudget, currentExpenses }) {
                     : "bg-green-500"
               }`}
             />
-            <p className="text-xs text-muted-foreground text-right">
+            <p className="text-xs text-muted-foreground text-right text-white">
               {percentUsed.toFixed(1)}% used
             </p>
           </div>
