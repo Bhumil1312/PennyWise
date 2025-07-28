@@ -56,11 +56,11 @@ This project was developed as part of the interview assignment for the Typeface 
 - **Receipt Upload with AI Parsing**  
   Upload POS receipts → auto-extract details with Gemini AI.
 
-- **Automated Email Alerts (85% Spending)**  
-  Users get alerted when budget usage reaches 85%.
+- **Automated Email Alerts (80% Spending)**  
+  Users get alerted when budget usage reaches 80%.
 
-- **Bulk PDF Statement Import (In Progress)**  
-  Extract multiple transactions from uploaded PDFs using LLM.
+- **Bulk Transactions Import from PDF Statement**  
+  Extract multiple transactions from uploaded PDF using LLM.
 
 - **Visual Dashboards + Charts**  
   See trends, by category & over time.
@@ -111,11 +111,13 @@ This project was developed as part of the interview assignment for the Typeface 
 
 3. Set environment variables in `.env.local`:
     - `DATABASE_URL`
+    - `DIRECT_URL` (optional)
     - `CLERK_SECRET_KEY`
     - `CLERK_PUBLISHABLE_KEY`
     - `GEMINI_API_KEY`
-    - `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`
-    - `NEXT_PUBLIC_CLERK_FRONTEND_API` (optional)
+    - `ARCJET_KEY`
+    - `RESEND_API_KEY`
+    - `NEXT_PUBLIC_CLERK_FRONTEND_APIs` (optional)
 
 4. Set up Prisma DB:
     ```
@@ -182,25 +184,25 @@ Once pushed, collaborators and reviewers (including interviewers) can check your
 | View entries by date range                             | ✅ Implemented     |
 | Charts by category and over time                       | ✅ Implemented     |
 | Upload POS receipts and extract data                   | ✅ Done (Gemini AI)|
-| Upload & parse PDF (batch transactions)                | ⚠️ In Progress     |
+| Upload & parse PDF (batch transactions)                | ✅ Done (Gemini AI)|
 | APIs separate from frontend                            | ✅ Implemented     |
 | Persistent PostgreSQL storage                          | ✅ With Prisma     |
 | Auth for users and data isolation                      | ✅ With Clerk      |
+| Paginated transactions                                 | ✅ Done            |
 | Bonus: Email alerts at 85% budget                      | ✅ Implemented     |
-| Bonus: Paginated transactions                          | ✅ Done            |
 
 ---
 
 ## Limitations
 
-- **PDF Parser Still Evolving**  
-  Gemini AI output from PDF tables can be inconsistent. I'm working on structuring the response into clean transaction arrays.
+- **Generative AI Output Variability**
+  The structured transaction data extracted via Gemini AI from document images or other sources can sometimes be inconsistent or incomplete. Continual improvements are underway to enhance parsing accuracy and format consistency.
 
-- **Edge Case Accuracy (OCR)**  
-  Faded or skewed receipts sometimes confuse Gemini’s OCR, resulting in partially incorrect data.
+- **Edge Case Accuracy (OCR and Interpretation)**
+  Receipts or statements with faded text, complex layouts, or unusual fonts may cause the AI to misinterpret details, leading to partial or incorrect transaction data.
 
-- **Live Hosting Option**  
-  This README assumes local dev setup. A production-ready deployment config (e.g., Vercel or Render) can be added easily.
+- **Local Development Focus**
+  This project is built assuming a local development environment. Additional configuration and optimization is needed for smooth deployment on production platforms like Vercel or Render.
 
 ---
 
