@@ -15,14 +15,13 @@ const aj = arcjet({
   rules: [
     // Shield protection for content and security
     shield({
-      mode: "LIVE",
+      mode: "DRY_RUN", // will not block requests, but will log them
     }),
     detectBot({
-      mode: "LIVE", // will block requests.
+      mode: "DRY_RUN", // will alert based on requests.
       allow: [
         "CATEGORY:SEARCH_ENGINE", // Google, Bing, etc
         "GO_HTTP", // For Inngest
-        // See the full list at https://arcjet.com/bot-list
       ],
     }),
   ],

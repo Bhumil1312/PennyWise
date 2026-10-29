@@ -1,0 +1,23 @@
+syntax = "proto3";
+
+package pennywise.health.v1;
+
+option go_package = "github.com/Bhumil1312/PennyWise/gen/go/pennywise/health/v1;healthv1";
+
+service HealthService {
+  rpc Check(CheckRequest) returns (CheckResponse);
+}
+
+message CheckRequest {}
+
+message CheckResponse {
+  Status status = 1;
+  string service = 2;
+  string version = 3;
+}
+
+enum Status {
+  STATUS_UNSPECIFIED = 0;
+  STATUS_SERVING = 1;
+  STATUS_NOT_SERVING = 2;
+}

@@ -1,0 +1,4 @@
+date,description,amount,type,reference,category,subcategory
+2026-01-01,Monthly salary,95000.00,income,SAMPLE-SALARY-001,Income,Salary
+2026-01-02,Groceries,2860.00,expense,SAMPLE-SHOP-001,Food & groceries,Groceries
+2026-01-03,"Dinner, family restaurant",1250.50,expense,SAMPLE-FOOD-001,Food & groceries,Dining out

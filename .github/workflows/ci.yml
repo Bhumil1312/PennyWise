@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  proto:
+    name: Proto lint + generate check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: bufbuild/setup-buf@v1
+        with:
+          version: 1.47.2
+      - name: Lint
+        working-directory: protos
+        run: buf lint
+      - name: Breaking change check
+        working-directory: protos
+        run: buf breaking --against "https://github.com/Bhumil1312/PennyWise.git#branch=main,subdir=protos"
+      - name: Generation is up to date
+        run: |
+          go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.36.5
+          go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.5.1
+          cd protos && buf generate
+          cd .. && git diff --exit-code -- gen/go
+
+  go:
+    name: Go build + test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: "1.25"
+      - name: Build
+        run: go build github.com/Bhumil1312/PennyWise/...
+      - name: Test
+        run: go test -race ./...
+      - name: Vet
+        run: go vet github.com/Bhumil1312/PennyWise/...
+
+  frontend:
+    name: Next.js lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint

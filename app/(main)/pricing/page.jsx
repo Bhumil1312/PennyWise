@@ -6,7 +6,7 @@ import { useState, useEffect } from 'react';
 import { toast } from 'sonner';
 import { updateSubscription } from '@/actions/account';
 import { useUser } from '@clerk/nextjs';
-import { db } from '@/lib/prisma'; // Assuming you have a client-side prisma instance or similar
+import { db } from '@/lib/prisma';
 
 const PricingPage = () => {
   const { user } = useUser();
@@ -80,7 +80,7 @@ const PricingPage = () => {
       const result = await updateSubscription(tierName);
       if (result.success) {
         toast.success(result.message);
-        setCurrentSubscription(tierName); // Update local state
+        setCurrentSubscription(tierName);
       } else {
         toast.error(result.error || 'Failed to update subscription.');
       }

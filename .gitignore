@@ -29,6 +29,9 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
+hs_err_pid*.log
+replay_pid*.log
 
 # env files (can opt-in for committing if needed)
 .env*
@@ -42,4 +45,14 @@ next-env.d.ts
 
 /lib/generated/prisma
 
-/lib/generated/prisma
+# go
+/bin/
+*.exe
+go.sum.bak
+
+# terraform
+/infra/terraform/.terraform/
+*.tfstate
+*.tfstate.*
+*.tfvars
+.terraform.lock.hcl.tmp

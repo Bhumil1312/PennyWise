@@ -95,7 +95,6 @@ export async function scanPDF(file) {
     Only respond with valid JSON.
   `;
 
-
     const result = await model.generateContent([
       {
         inlineData: {
@@ -120,7 +119,10 @@ export async function scanPDF(file) {
     }
   } catch (error) {
     console.error("Error scanning PDF:", error);
-    throw new Error("Failed to scan PDF");
+    if (error && error.status === 503) {
+      throw new Error("The scanning service is temporarily unavailable (Error 503). Please try again later.");
+    }
+    throw new Error("Failed to scan PDF. The file may be invalid or the service is busy.");
   }
 }
 

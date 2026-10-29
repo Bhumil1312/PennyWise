@@ -1,0 +1,20 @@
+syntax = "proto3";
+
+package pennywise.common.v1;
+
+option go_package = "github.com/Bhumil1312/PennyWise/gen/go/pennywise/common/v1;commonv1";
+
+message Money {
+  int64 minor_units = 1;
+  string currency = 2;
+}
+
+message PageRequest {
+  int32 limit = 1;
+  string cursor = 2;
+}
+
+message PageResponse {
+  string next_cursor = 1;
+  bool has_more = 2;
+}

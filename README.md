@@ -1,8 +1,16 @@
 # PennyWise
 
+## India-first Flutter app
+
+The mobile continuation lives in [`mobile/`](mobile). Start with [the working features and run instructions](docs/START_HERE.md), [the current architecture](docs/ARCHITECTURE_INDIA.md), and [the system-design learning guide](docs/SYSTEM_DESIGN_LEARNING.md). Dynamic financial planning is phase two. The first milestone is a local finance app with a browser demo; online sign-in, banking/broker integrations, encrypted recovery and production backend delivery remain explicit next milestones. The existing web application below is preserved.
+
 **A Modern Personal Finance Tracker**  
 **Assignment Submission – Typeface AI Recruitment (Full Stack)**  
 Developer: [Bhumil1312](https://github.com/Bhumil1312)
+
+---
+
+> **🚀 Monorepo notice:** This repo is being upgraded into a 10M-user microservices platform (Go backend on AWS + this Next.js app as the frontend). See [ARCHITECTURE.md](./ARCHITECTURE.md) for the target design and the Phase P0 scaffolding (protos, shared Go libs, auth-service, Terraform, CI). The instructions below still apply to the existing Next.js app.
 
 ---
 

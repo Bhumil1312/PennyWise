@@ -40,13 +40,11 @@ export function DashboardOverview({ accounts, transactions }) {
     accounts.find((a) => a.isDefault)?.id || accounts[0]?.id
   );
 
-  const accountTransactions = transactions.filter(
-    (t) => t.accountId === selectedAccountId
-  );
+  const [selectedValue, setSelectedValue] = useState(0);
 
-  const recentTransactions = accountTransactions
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 5);
+  const accountTransactions = transactions.filter((t) => t.accountId === selectedAccountId);
+
+  const recentTransactions = accountTransactions.filter((t) => t.amount > selectedValue);
 
   const currentDate = new Date();
 
@@ -196,6 +194,28 @@ export function DashboardOverview({ accounts, transactions }) {
             </div>
             {/* Recent Transactions */}
             <div>
+              <Select
+                value={selectedValue}
+                onValueChange={(v) => setSelectedValue(v)}
+              >
+                <SelectTrigger className="ml-auto w-48 text-base bg-gray-900/70 border border-white/20 text-white">
+                  <SelectValue placeholder="Filter by amount" />
+                </SelectTrigger>
+                <SelectContent className="bg-gray-900/90 text-white border border-white/20">
+                    <SelectItem key={0} value={0} className="text-white">
+                      All
+                    </SelectItem>
+                    <SelectItem key={10000} value={10000} className="text-white">
+                      More than 10,000
+                    </SelectItem>
+                    <SelectItem key={5000} value={5000} className="text-white">
+                      More than 5,000
+                    </SelectItem>
+                    <SelectItem key={1000} value={1000} className="text-white">
+                      More than 1,000
+                    </SelectItem>
+                </SelectContent>
+              </Select>
               <h3 className="font-semibold text-lg mb-4 text-white">
                 Recent Transactions
               </h3>
